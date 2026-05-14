@@ -190,6 +190,79 @@ Current conclusion:
 - We can dispatch WebView clicks through CDP.
 - We cannot yet claim full GraphView control, because the project/GraphView was not opened in this validation pass.
 
+## 2026-05-14 Project Open And Controller Deploy Journey
+
+Verified route from AppStudio start page into the project designer:
+
+1. Fully close AppStudio.
+2. Start the helper server.
+3. Launch AppStudio with WebView2 DevTools enabled:
+
+```powershell
+.\.venv\Scripts\python examples\appstudio_devtools_probe.py
+```
+
+4. Confirm `/chromium/status?port=9222` returns `ok=true`.
+5. On the project page, identify the project card row. For `Palletizing`, the row exposes:
+   - `Project Icon`
+   - `Palletizing`
+   - `Web app`
+   - `5/11/2026, 7:25:55 AM`
+6. Click the lower card-row `Palletizing` label beside the icon/date. This is not the left-list `Palletizing` text. In the validation run, the opening click targeted node `243`.
+7. The project designer opens and exposes:
+   - `Breadcrumb`
+   - `Projects > Palletizing`
+   - `Deploy`
+   - `UI designer`
+   - `Function`
+   - `Translation`
+   - `Component`
+   - `Structure`
+   - `Appearance`
+   - `Behavior`
+   - project/canvas text such as `Pattern builder`, `Palletizing | Production`, `Currently Palletizing`, and `Pattern name:`
+
+Verified controller connection route:
+
+1. Use UI Automation, not Chromium, for the native shell button `Connect to controller`.
+2. Invoke/click `Connect to controller`.
+3. A child window inside AppStudio appears with class `RobotLogin` and title `Log in to controller`.
+4. Select `Virtual controller`.
+5. Click `Log in as Default User`.
+6. If a virtual controller is running in RobotStudio, the login dialog closes. If no virtual controller is running, the dialog remains open. The dialog includes a required `Controller IP` field and warning text: `If multiple controllers are started in RobotStudio, please shut down those that are not needed.`
+
+Verified controller deployment route:
+
+1. After controller login succeeds, click Chromium node `Deploy` in the project designer.
+2. The modal `Deploy web app` opens.
+3. It exposes:
+   - `Controller` radio, selected by default.
+   - `Local file path` radio, alternate target.
+   - settings text for responsive layout, sequential deployment, and JavaScript compression.
+   - final `Cancel` and `Deploy` buttons.
+4. Click final `Deploy`.
+5. If an older deployment exists, AppStudio opens `Duplicate file found`:
+   - Message: `The deployment path contains a duplicate file. Continuing will overwrite it.`
+   - Buttons: `Cancel`, `Continue`
+6. Treat `Continue` as an overwrite confirmation. It is appropriate for an intentional redeploy, but future agents should stop and ask if overwrite has not been approved.
+7. After pressing `Continue`, deployment completed successfully in this run.
+8. Success dialog:
+   - `Palletizing is deployed!`
+   - `You can open your web app in teach pendant now.`
+   - Buttons: `Open in browser`, `OK`
+9. Pressing `Open in browser` opened Chrome at:
+
+```text
+http://127.0.0.1:80/fileservice/$HOME/WebApps/Palletizing/index.html?nocache=<uuid>
+```
+
+Notes:
+
+- The Chrome instance opened by AppStudio did not expose an obvious remote-debugging port in this validation.
+- AppStudio WebView DevTools on `9222` remains for AppStudio itself, not necessarily for the deployed app browser.
+- Raw `Invoke-WebRequest` to the controller fileservice URL failed with `The underlying connection was closed`, even though Chrome opened the page. Browser-side inspection needs a separate Chrome-debugging strategy or another controller-compatible HTTP client path.
+- Do not press overwrite/continue automatically unless the user has approved redeployment overwrite behavior.
+
 Reference:
 
 - Microsoft Learn, Debug WebView2 apps with Visual Studio Code: https://learn.microsoft.com/microsoft-edge/webview2/how-to/debug-visual-studio-code
