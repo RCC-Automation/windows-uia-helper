@@ -169,3 +169,24 @@ Success evidence:
 - Output showed `GoFa10 (Station)` events including system restart, program started, user logged on, Motors On, and Motors Off.
 
 Conclusion: the recent-project route is enough for a future AI workflow to start RobotStudio, open the expected station, and confirm that one virtual controller is loaded before AppStudio attempts controller login/deployment.
+
+## 2026-05-14 RobotStudio Virtual Controller Restart Validation
+
+Validated warm restart route for the loaded `Palletize Template_new` project and `GoFa10` virtual controller.
+
+Route:
+
+- Click RobotStudio ribbon tab `&Controller`.
+- In `Controller Tools`, invoke `CmdBarCtl_ControllerRestartWarm`.
+- RobotStudio shows `Restart (Warmstart)`.
+- Confirmation text: `The controller will be restarted. The state is saved and any changed configuration parameters will be activated after the restart.`
+- Click `OK` only when restart is explicitly approved.
+
+Post-restart validation:
+
+- No confirmation dialog remained.
+- Window title remained `Palletize Template_new - RobotStudio`.
+- Status bar showed `Controller status: 1/1`.
+- Output pane exposed `GoFa10 (Station)` controller events, including `10045 - System restarted`, Motors On/Off, and safety-warning messages.
+
+Safety note: warm restart affects the virtual controller runtime state and may activate changed configuration parameters. Do not run it unless explicitly requested by the operator or a scenario has an explicit `allow_restart=true` flag.

@@ -140,6 +140,86 @@ For AppStudio deployment workflows, the minimum RobotStudio validation needed be
 2. A virtual controller is listed in the project info or output.
 3. Status bar shows `Controller status: 1/1`, or equivalent evidence that one controller is loaded.
 
+## Restart The Virtual Controller
+
+Validated on 2026-05-14 with project:
+
+```text
+Palletize Template_new
+```
+
+and virtual controller:
+
+```text
+GoFa10
+```
+
+### UI Route
+
+1. Open the RobotStudio project.
+2. Click the ribbon tab:
+
+```text
+&Controller
+```
+
+3. In the Controller ribbon, UIA exposes:
+
+```text
+Pane: Access
+Button: CmdBarCtl_ControllerRequestWriteAccess
+Button: CmdBarCtl_ControllerReleaseWriteAccess
+Pane: Controller Tools
+SplitButton: CmdBarSplitCtl_MenuControllerRestart
+Button: CmdBarCtl_ControllerRestartWarm
+MenuItem: CmdBarCtl_MenuControllerRestart
+```
+
+4. Click:
+
+```text
+CmdBarCtl_ControllerRestartWarm
+```
+
+5. RobotStudio opens a confirmation dialog embedded in the main window:
+
+```text
+Restart (Warmstart)
+```
+
+Dialog text:
+
+```text
+The controller will be restarted. The state is saved and any changed configuration parameters will be activated after the restart.
+```
+
+Dialog controls:
+
+- `Do not show this dialog again`
+- `OK`
+- `Cancel`
+- `Close`
+
+6. Click `OK` only when the operator explicitly asked for a controller restart.
+
+### Validation After Restart
+
+After confirming the warm restart, monitor RobotStudio until:
+
+- no restart confirmation dialog remains;
+- the RobotStudio window remains on the expected project;
+- the status bar shows:
+
+```text
+Controller status: 1/1
+```
+
+In the validated run, UIA polling saw `Controller status: 1/1` after the restart command and no remaining confirmation dialog. The visible Output list still exposed earlier `GoFa10 (Station)` messages, including `10045 - System restarted`, `10010 - Motors Off state`, `10011 - Motors On state`, and `90526 - Safety Controller Automatic Mode Warning`. Treat the status bar as the primary recovery signal unless a fresher event-log timestamp is available.
+
+### Safety Notes
+
+Warm restart changes controller runtime state and can activate changed configuration parameters. It is allowed only when explicitly requested. Future agents should not restart the controller as a routine health check.
+
 ## Missing Capabilities To Implement Next
 
 - Add a reusable RobotStudio scenario runner that:
@@ -159,5 +239,12 @@ For AppStudio deployment workflows, the minimum RobotStudio validation needed be
   - detect `Controller status: 1/1`;
   - extract controller name and RobotWare version from the info pane when available;
   - classify output messages into loaded/running/stopped/motors-on/motors-off/safety-stop.
+
+- Add controller restart automation:
+  - switch to `&Controller`;
+  - invoke `CmdBarCtl_ControllerRestartWarm`;
+  - confirm `Restart (Warmstart)` only when a scenario flag such as `allow_restart=true` is present;
+  - poll until `Controller status: 1/1`;
+  - capture restart confirmation text and recovery evidence in the JSON run report.
 
 - Investigate RobotStudio APIs or command-line options for opening a project directly, but keep the UIA recent-project route as the proven fallback.
