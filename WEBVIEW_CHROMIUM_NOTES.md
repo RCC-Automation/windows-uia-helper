@@ -266,3 +266,89 @@ Notes:
 Reference:
 
 - Microsoft Learn, Debug WebView2 apps with Visual Studio Code: https://learn.microsoft.com/microsoft-edge/webview2/how-to/debug-visual-studio-code
+
+## 2026-05-14 Deployed Web App Browser Journey
+
+After pressing `Open in browser`, Chrome opens the deployed web app at a controller file-service URL similar to:
+
+```text
+http://127.0.0.1:80/fileservice/$HOME/WebApps/Palletizing/index.html?nocache=<uuid>
+```
+
+Chrome immediately shows a native login prompt. The prompt is not part of the app DOM; UI Automation sees it as a Chrome dialog:
+
+- title: `Anmelden`
+- origin label: `https://127.0.0.1:80`
+- username edit: `Nutzername`
+- password edit: `Passwort`
+- submit button: `Anmelden`
+
+Verified credentials for the local RobotStudio virtual controller web app:
+
+- username: `Default User`
+- password: provided by the operator for the session
+
+After submitting those credentials, the browser title changed to `Palletizing`, confirming that the deployed app opened.
+
+### Programmatic Browser Access
+
+The AppStudio-opened Chrome instance is useful for the human journey, but it does not necessarily expose a DevTools port. For DOM-level automation, launch a separate Chrome instance with DevTools and navigate to the HTTPS controller endpoint:
+
+```powershell
+.\.venv\Scripts\python examples\deployed_webapp_probe.py --password <password>
+```
+
+Important details:
+
+- Use `https://127.0.0.1:80/fileservice/$HOME/WebApps/Palletizing/index.html`, not the plain HTTP URL, for the debug-controlled browser.
+- The controller presents a self-signed or untrusted certificate. CDP must call `Security.setIgnoreCertificateErrors` before navigation.
+- Supplying credentials in the URL works for the local validation path:
+
+```text
+https://Default%20User:<password>@127.0.0.1:80/fileservice/$HOME/WebApps/Palletizing/index.html
+```
+
+Avoid printing the password in logs. Prefer passing it as an argument or secret when this becomes a durable automation flow.
+
+### Verified Deployed App State
+
+The deployed app DOM was readable through CDP. Initial Production view text included:
+
+- `Palletizing | Production`
+- `Currently Palletizing`
+- `demo_pallet`
+- `Abort pallet`
+- `Actions`
+- `Start new pallet`
+- `Stop immediately`
+- `Resume`
+- `Pallet status`
+- `Pallet 1 Active`
+- `Pallet 2 Full`
+- `Pattern name: demo_pattern_2`
+- `Current layer 2/8`
+- `Total boxes placed 11/88`
+- `88 % Remaining`
+
+The app shell uses custom HTML components rather than semantic native buttons in many places. Querying `button,input,select,textarea,[role=button]` returned no controls on the Production page, but direct DOM inspection found clickable custom menu entries:
+
+```text
+.fp-components-hamburgermenu-a-menu__button
+```
+
+Verified safe navigation by DOM click:
+
+- `Production`
+- `Tuning`
+- `Recipe configuration`
+- `Pattern builder`
+
+Observed page texts:
+
+- `Palletizing | Tuning`, with box and motion tuning sections.
+- `Palletizing | Recipe configuration | demo_pallet`, with recipes `demo_pallet-2`, `demo_pallet`, and `demo_pallet_Copy`.
+- `Palletizing | Pattern design`, with patterns `aaa`, `demo_pattern_1`, and `demo_pattern_2`.
+
+### Safety Boundary
+
+Navigation between app views is safe. Production actions such as `Abort pallet`, `Start new pallet`, `Stop immediately`, `Resume`, and pallet-state changes may affect the controller state. Future agents should not click those controls unless the operator explicitly asks for that runtime action.

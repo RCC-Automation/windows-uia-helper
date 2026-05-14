@@ -79,3 +79,30 @@ Breakthrough:
 Safety note:
 
 - `Continue` in the duplicate-file dialog overwrites an existing deployment. It is acceptable for intentional redeploys, but future agents should ask before pressing it unless overwrite has already been approved for the task.
+
+## 2026-05-14 Deployed Web App Login And DOM Validation
+
+The deployed browser journey is now validated end to end:
+
+- `Open in browser` launches Chrome to the controller file-service URL.
+- Chrome shows a native login prompt for `https://127.0.0.1:80`.
+- UIA can fill the prompt fields `Nutzername` and `Passwort` and press `Anmelden`.
+- Login as `Default User` with the operator-provided password opened the deployed `Palletizing` web app.
+
+For programmatic DOM access, a separate debug-enabled Chrome instance worked when using:
+
+- endpoint: `https://127.0.0.1:80/fileservice/$HOME/WebApps/Palletizing/index.html`
+- CDP port: `9333`
+- CDP setting: `Security.setIgnoreCertificateErrors`
+- credentials embedded only for local validation
+
+`examples/deployed_webapp_probe.py` captures this route and prints the deployed app title, URL, visible text, and hamburger-menu entries.
+
+Confirmed DOM-level navigation:
+
+- Production
+- Tuning
+- Recipe configuration
+- Pattern builder
+
+Do not automate runtime-affecting production actions without explicit operator approval.
