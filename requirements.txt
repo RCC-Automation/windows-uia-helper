@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+pywinauto
+pydantic
+pywin32
+websocket-client
