@@ -256,6 +256,150 @@ The intended future AI loop should be:
 
 The current repo supports steps 2 through 6 for an existing project, with supervision. Steps 1, 7, 8, 9, and 10 still depend on the surrounding AppStudio project repository and the future scenario runner.
 
+## Create A New Blank Project
+
+Validated on 2026-05-14 by creating a short test project named:
+
+```text
+AITest01
+```
+
+Generated project folder:
+
+```text
+C:\Users\barru\Documents\AppStudio\Projects\AITest01
+```
+
+Generated files and folders included:
+
+- `AITest01.aspproj`
+- `WebAppData.json`
+- `WebAppData_mini.json`
+- `Assets/images/defaultIcon.png`
+- `Assets/images/imageDefault.png`
+- `Assets/images/tabDefault.png`
+- `Languages/en.json`
+- empty scaffold folders `CFG`, `MOD`, and `CustomFunctions`
+
+### Leave An Open Project
+
+When a project designer is open, use the breadcrumb in the upper-left AppStudio WebView:
+
+```text
+Projects > <project name> > <web app name>
+```
+
+To return to the front page/project list, click the middle breadcrumb project name. For the validated `Palletizing` run, clicking the first `Palletizing` breadcrumb link after `Projects` returned to the front page.
+
+Do not click the final web app breadcrumb if the goal is to go back to the front page. The final entry represents the currently opened web app.
+
+### Start New Project Dialog
+
+From the front page:
+
+1. Click `New project`.
+2. The `Create a project` dialog opens.
+3. Click `Project with a blank web app`.
+4. The dialog switches to the `Property` tab.
+
+Observed property fields:
+
+- required `Location`, default:
+
+```text
+C:/Users/barru/Documents/AppStudio/Projects
+```
+
+- required `Web app name`, default observed:
+
+```text
+Webapp3
+```
+
+- `Width x Height (Wide)`, default:
+
+```text
+FlexPendant 1024 x 680 px
+```
+
+- checkbox:
+
+```text
+Enable compact screen
+```
+
+- group:
+
+```text
+Web app logo
+```
+
+- tabs:
+
+```text
+Property
+Language
+```
+
+- footer buttons:
+
+```text
+Previous
+Create
+```
+
+The dialog text says the web app name is also used as the project name and that a duplicate deployment name can replace the one with the duplicate name on the controller. Keep the name short; the operator expects names of about 20 characters or fewer.
+
+### Fill And Create
+
+For the validation, the name was changed through DOM/CDP from `Webapp3` to:
+
+```text
+AITest01
+```
+
+The textbox exposed through accessibility as:
+
+```text
+role: textbox
+name: *Web app name
+value: AITest01
+```
+
+Then click `Create`.
+
+Expected result:
+
+- the dialog closes;
+- the project appears in the front-page project list/card list;
+- the new card row includes `Project Icon`, project name, and creation date;
+- clicking the card-row project name opens the new blank web app designer.
+
+### Enter The New Blank Web App
+
+After creation, AppStudio showed an `AITest01` project card row. Clicking the row label beside the icon/date opened the designer.
+
+Verified designer state:
+
+- breadcrumb:
+
+```text
+Projects > AITest01 > AITest01
+```
+
+- `Deploy` button is visible;
+- `UI designer`, `Function`, and `Translation` tabs are visible;
+- side panels include `Component`, `Structure`, `Appearance`, and `Behavior`;
+- default blank-app starter content includes `This is a Text`, `Button`, and sample structure labels such as `text1`, `text2`, `text3`.
+
+### Safety Notes For Future Agents
+
+- Creating a new project writes to `C:\Users\barru\Documents\AppStudio\Projects`.
+- Use a short, clearly disposable name unless the operator gives the real project name.
+- Do not delete the generated project unless the operator explicitly asks.
+- If the chosen name already exists, stop and ask before overwriting, replacing, or creating a duplicate variant.
+- Do not add a custom logo or change advanced settings unless the operator asks; leave defaults during workflow discovery.
+
 ## Missing Capabilities To Implement Next
 
 ### High Priority
@@ -273,6 +417,14 @@ The current repo supports steps 2 through 6 for an existing project, with superv
   - find project cards by name and type;
   - prefer card-row labels beside project icon/date;
   - verify designer breadcrumb after opening.
+
+- Add reusable project-create logic:
+  - click `New project`;
+  - select `Project with a blank web app`;
+  - fill `*Web app name`;
+  - preserve or explicitly set `*Location`;
+  - click `Create`;
+  - verify generated files and open designer breadcrumb.
 
 - Add reusable controller-login logic:
   - find `Connect to controller`;
@@ -298,12 +450,6 @@ The current repo supports steps 2 through 6 for an existing project, with superv
   - choose a workspace output folder;
   - document generated files;
   - compare local output with controller output.
-
-- Implement new-project creation exploration:
-  - click `New project`;
-  - capture required fields and templates;
-  - create a disposable test project only after operator approval;
-  - document project file locations and cleanup rules.
 
 - Add recovery checks:
   - detect stale AppStudio process without DevTools;

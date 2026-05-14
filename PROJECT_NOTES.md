@@ -106,3 +106,33 @@ Confirmed DOM-level navigation:
 - Pattern builder
 
 Do not automate runtime-affecting production actions without explicit operator approval.
+
+## 2026-05-14 New Blank Project Creation Validation
+
+Validated leaving an existing project and creating a new blank AppStudio project.
+
+Route out of an open project:
+
+- In the AppStudio WebView breadcrumb, click the middle project-name link in `Projects > <project name> > <web app name>`.
+- For `Palletizing`, clicking the first `Palletizing` link after `Projects` returned to the front page.
+
+New-project route:
+
+- Click `New project`.
+- In `Create a project`, click `Project with a blank web app`.
+- The property form exposes default location `C:/Users/barru/Documents/AppStudio/Projects`, web app name `Webapp3`, `FlexPendant 1024 x 680 px`, `Enable compact screen`, `Web app logo`, tabs `Property` and `Language`, and buttons `Previous` and `Create`.
+- Change `*Web app name` to a short name. The validation used `AITest01`.
+- Click `Create`.
+- AppStudio created `C:\Users\barru\Documents\AppStudio\Projects\AITest01`.
+- Clicking the new `AITest01` project-card row opened the blank app designer.
+
+Generated files observed:
+
+- `AITest01.aspproj`
+- `WebAppData.json`
+- `WebAppData_mini.json`
+- image defaults under `Assets/images`
+- `Languages/en.json`
+- scaffold folders `CFG`, `MOD`, and `CustomFunctions`
+
+The opened blank designer showed breadcrumb `Projects > AITest01 > AITest01`, visible `Deploy`, `UI designer`, `Function`, `Translation`, `Component`, `Structure`, `Appearance`, `Behavior`, and default starter content such as `This is a Text` and `Button`.
