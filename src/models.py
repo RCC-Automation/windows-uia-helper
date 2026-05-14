@@ -83,6 +83,12 @@ class ChromiumFindRequest(ChromiumPageRequest):
     contains: bool = True
 
 
+class ChromiumClickRequest(ChromiumFindRequest):
+    node_id: Optional[str] = None
+    click_count: int = 1
+    confirm: bool = False
+
+
 class ErrorResponse(BaseModel):
     ok: bool = False
     error: str

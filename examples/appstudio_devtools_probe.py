@@ -11,6 +11,7 @@ from urllib.request import urlopen
 BASE_URL = "http://127.0.0.1:8765"
 APPSTUDIO_EXE = r"C:\Program Files (x86)\ABB\AppStudio\AppStudio.Desktop.exe"
 DEVTOOLS_PORT = 9222
+DEVTOOLS_ARGS = f"--remote-debugging-port={DEVTOOLS_PORT} --remote-allow-origins=http://127.0.0.1:{DEVTOOLS_PORT}"
 
 
 def get(path: str, query: Dict[str, Any], timeout: int = 3) -> Dict[str, Any]:
@@ -37,7 +38,7 @@ def wait_for_devtools(port: int, timeout_seconds: int = 12) -> Dict[str, Any]:
 
 def main() -> None:
     env = os.environ.copy()
-    env["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = f"--remote-debugging-port={DEVTOOLS_PORT}"
+    env["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = DEVTOOLS_ARGS
 
     print(f"Launching AppStudio with WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS={env['WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS']}")
     subprocess.Popen([APPSTUDIO_EXE], env=env)

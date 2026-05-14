@@ -43,6 +43,7 @@ The Chromium endpoints assume a DevTools endpoint such as `127.0.0.1:9222`.
 - `GET /chromium/pages?host=127.0.0.1&port=9222`
 - `POST /chromium/accessibility`
 - `POST /chromium/find`
+- `POST /chromium/click`
 
 Request body for `/chromium/accessibility`:
 
@@ -66,6 +67,23 @@ Request body for `/chromium/find`:
   "contains": true
 }
 ```
+
+Request body for `/chromium/click`:
+
+```json
+{
+  "host": "127.0.0.1",
+  "port": 9222,
+  "page_id": null,
+  "node_id": "219",
+  "name": null,
+  "role": null,
+  "contains": true,
+  "click_count": 2
+}
+```
+
+`/chromium/click` resolves an accessibility node to its `backendDOMNodeId`, reads the DOM box through CDP, and dispatches mouse events at the element center. This is still structured WebView automation; it is not screenshot recognition.
 
 ## How To Probe AppStudio
 
@@ -106,7 +124,7 @@ Until such a port is available, the helper can still operate native AppStudio sh
 Microsoft documents `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS` as a way to pass extra browser arguments to WebView2, including:
 
 ```text
---remote-debugging-port=9222
+--remote-debugging-port=9222 --remote-allow-origins=http://127.0.0.1:9222
 ```
 
 The same Microsoft guidance also describes a policy registry route under:
@@ -118,7 +136,7 @@ HKEY_CURRENT_USER\Software\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArg
 with an app-specific value such as:
 
 ```text
-AppStudio.Desktop.exe = --remote-debugging-port=9222
+AppStudio.Desktop.exe = --remote-debugging-port=9222 --remote-allow-origins=http://127.0.0.1:9222
 ```
 
 Use the environment-variable route first because it is reversible and does not modify machine policy:
@@ -128,6 +146,49 @@ Use the environment-variable route first because it is reversible and does not m
 ```
 
 If AppStudio is already running, close it fully before using this probe. Many WebView2 apps are single-instance applications; launching a second copy may simply activate the existing process, which means the new environment variable will not be applied.
+
+## 2026-05-14 Breakthrough Result
+
+After fully closing AppStudio and launching it with:
+
+```text
+WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222
+```
+
+the helper reached the WebView2 DevTools endpoint:
+
+- Browser: `Edg/148.0.3967.54`
+- Page title: `webpackage`
+- Page URL: `file:///C:/Program Files (x86)/ABB/AppStudio/Assets/webpackage/index.html`
+
+The Chromium accessibility tree exposed semantic AppStudio project-page content, including:
+
+- `New project`
+- `Open project`
+- `Projects`
+- `Search`
+- `Palletizing`
+- `Web app`
+- `WebAppSignalSetupDem`
+- `WebAppScrewdriverQC2`
+- `QuickConfigUsage`
+- `WebAppScrewdriver`
+- `Webapp1`
+- `Webapp2`
+- `Import`
+- `Export`
+
+Verified WebView control:
+
+- `/chromium/find` finds nodes such as `Projects` and `Palletizing`.
+- `/chromium/click` can dispatch clicks against WebView accessibility nodes.
+- Clicking and double-clicking the visible `Palletizing` text node selected/hovered the project and revealed the `.aspproj` tooltip, but did not open the project. Future work should find the parent card/open affordance or invoke the internal route/action directly through CDP.
+
+Current conclusion:
+
+- We can now inspect AppStudio WebView content semantically.
+- We can dispatch WebView clicks through CDP.
+- We cannot yet claim full GraphView control, because the project/GraphView was not opened in this validation pass.
 
 Reference:
 

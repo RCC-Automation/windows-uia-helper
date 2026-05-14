@@ -4,7 +4,15 @@ from fastapi import FastAPI, Query
 from fastapi.responses import JSONResponse
 
 from .chromium_accessibility import ChromiumAccessibilityError, ChromiumAccessibilityService
-from .models import ActionRequest, ChromiumFindRequest, ChromiumPageRequest, FindRequest, HotkeyRequest, TypeRequest
+from .models import (
+    ActionRequest,
+    ChromiumClickRequest,
+    ChromiumFindRequest,
+    ChromiumPageRequest,
+    FindRequest,
+    HotkeyRequest,
+    TypeRequest,
+)
 from .safety import SafetyError
 from .uia_service import UIAService, UIAServiceError
 
@@ -114,3 +122,20 @@ def chromium_find(request: ChromiumFindRequest):
         role=request.role,
         contains=request.contains,
     )
+
+
+@app.post("/chromium/click")
+def chromium_click(request: ChromiumClickRequest):
+    return {
+        "ok": True,
+        **chromium_service.click(
+            host=request.host,
+            port=request.port,
+            page_id=request.page_id,
+            node_id=request.node_id,
+            name=request.name,
+            role=request.role,
+            contains=request.contains,
+            click_count=request.click_count,
+        ),
+    }

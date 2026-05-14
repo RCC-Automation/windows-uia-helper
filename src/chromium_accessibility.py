@@ -58,8 +58,7 @@ class ChromiumAccessibilityService:
         websocket_url = page.get("webSocketDebuggerUrl")
         if not websocket_url:
             raise ChromiumAccessibilityError("DEVTOOLS_PAGE_NOT_DEBUGGABLE", "Selected page has no debugger URL.")
-        result = self._cdp_call(websocket_url, "Accessibility.getFullAXTree", {})
-        nodes = result.get("nodes", [])
+        nodes = self._raw_ax_nodes(websocket_url)
         return {
             "page": {
                 "id": page.get("id"),
@@ -85,6 +84,53 @@ class ChromiumAccessibilityService:
                 matches.append(node)
         return {"page": tree["page"], "matches": matches}
 
+    def click(
+        self,
+        host: str = "127.0.0.1",
+        port: int = 9222,
+        page_id: Optional[str] = None,
+        node_id: Optional[str] = None,
+        name: Optional[str] = None,
+        role: Optional[str] = None,
+        contains: bool = True,
+        click_count: int = 1,
+    ) -> Dict[str, Any]:
+        page = self._select_page(host, port, page_id)
+        websocket_url = page.get("webSocketDebuggerUrl")
+        if not websocket_url:
+            raise ChromiumAccessibilityError("DEVTOOLS_PAGE_NOT_DEBUGGABLE", "Selected page has no debugger URL.")
+        raw_nodes = self._raw_ax_nodes(websocket_url)
+        target = self._find_raw_node(raw_nodes, node_id=node_id, name=name, role=role, contains=contains)
+        backend_node_id = target.get("backendDOMNodeId")
+        if not backend_node_id:
+            raise ChromiumAccessibilityError(
+                "DEVTOOLS_NODE_NOT_ACTIONABLE",
+                f"Accessibility node {target.get('nodeId')} has no backend DOM node id.",
+            )
+        model = self._cdp_call(websocket_url, "DOM.getBoxModel", {"backendNodeId": backend_node_id}).get("model")
+        if not model or not model.get("content"):
+            raise ChromiumAccessibilityError("DEVTOOLS_NODE_NOT_ACTIONABLE", "Could not read DOM box for node.")
+        x, y = self._center_from_quad(model["content"])
+        click_count = max(1, min(click_count, 2))
+        self._cdp_call(websocket_url, "Input.dispatchMouseEvent", {"type": "mouseMoved", "x": x, "y": y})
+        for current_click in range(1, click_count + 1):
+            self._cdp_call(
+                websocket_url,
+                "Input.dispatchMouseEvent",
+                {"type": "mousePressed", "x": x, "y": y, "button": "left", "clickCount": current_click},
+            )
+            self._cdp_call(
+                websocket_url,
+                "Input.dispatchMouseEvent",
+                {"type": "mouseReleased", "x": x, "y": y, "button": "left", "clickCount": current_click},
+            )
+        return {
+            "page": {"id": page.get("id"), "title": page.get("title"), "url": page.get("url")},
+            "clicked": self._compact_node(target),
+            "point": {"x": x, "y": y},
+            "click_count": click_count,
+        }
+
     def _select_page(self, host: str, port: int, page_id: Optional[str]) -> Dict[str, Any]:
         pages = self.pages(host, port)
         candidates = [page for page in pages if page.get("type") == "page" and page.get("webSocketDebuggerUrl")]
@@ -96,6 +142,28 @@ class ChromiumAccessibilityService:
         if not candidates:
             raise ChromiumAccessibilityError("DEVTOOLS_PAGE_NOT_FOUND", "No debuggable Chromium page was found.")
         return candidates[0]
+
+    def _raw_ax_nodes(self, websocket_url: str) -> List[Dict[str, Any]]:
+        result = self._cdp_call(websocket_url, "Accessibility.getFullAXTree", {})
+        return result.get("nodes", [])
+
+    def _find_raw_node(
+        self,
+        nodes: List[Dict[str, Any]],
+        node_id: Optional[str],
+        name: Optional[str],
+        role: Optional[str],
+        contains: bool,
+    ) -> Dict[str, Any]:
+        for raw in nodes:
+            compact = self._compact_node(raw)
+            if node_id and str(compact.get("node_id")) == str(node_id):
+                return raw
+            if not node_id and self._matches(compact, name=name, role=role, contains=contains):
+                return raw
+        if node_id:
+            raise ChromiumAccessibilityError("DEVTOOLS_NODE_NOT_FOUND", f"No accessibility node with id {node_id}.")
+        raise ChromiumAccessibilityError("DEVTOOLS_NODE_NOT_FOUND", "No matching accessibility node was found.")
 
     def _get_json(self, url: str, timeout: int) -> Any:
         try:
@@ -114,7 +182,7 @@ class ChromiumAccessibilityService:
             ) from exc
 
         request_id = next(self._ids)
-        ws = websocket.create_connection(websocket_url, timeout=10)
+        ws = websocket.create_connection(websocket_url, timeout=10, suppress_origin=True)
         try:
             ws.send(json.dumps({"id": request_id, "method": method, "params": params}))
             while True:
@@ -135,6 +203,7 @@ class ChromiumAccessibilityService:
             "ignored": node.get("ignored", False),
             "role": self._ax_value(node.get("role")),
             "name": self._ax_value(node.get("name")),
+            "backend_dom_node_id": node.get("backendDOMNodeId"),
             "description": self._ax_value(node.get("description")),
             "value": self._ax_value(node.get("value")),
             "properties": self._compact_properties(node.get("properties", [])),
@@ -172,3 +241,8 @@ class ChromiumAccessibilityService:
         if role and str(node.get("role") or "").lower() != role.lower():
             return False
         return True
+
+    def _center_from_quad(self, quad: List[float]) -> tuple:
+        xs = quad[0::2]
+        ys = quad[1::2]
+        return sum(xs) / len(xs), sum(ys) / len(ys)

@@ -155,6 +155,13 @@ $body = @{ host = "127.0.0.1"; port = 9222; name = "Projects"; contains = $true 
 Invoke-RestMethod http://127.0.0.1:8765/chromium/find -Method Post -Body $body -ContentType "application/json"
 ```
 
+Click a Chromium accessibility node by text or node id:
+
+```powershell
+$body = @{ host = "127.0.0.1"; port = 9222; name = "Palletizing"; contains = $true; click_count = 2 } | ConvertTo-Json
+Invoke-RestMethod http://127.0.0.1:8765/chromium/click -Method Post -Body $body -ContentType "application/json"
+```
+
 If `/chromium/status` returns `DEVTOOLS_NOT_REACHABLE`, the WebView is not currently exposing a DevTools endpoint. In that case, future work should investigate whether AppStudio can be launched with a WebView2/Chromium remote-debugging flag or environment option. Do not fall back to screenshots for v1 unless the project explicitly changes direction.
 
 ## Security Model
