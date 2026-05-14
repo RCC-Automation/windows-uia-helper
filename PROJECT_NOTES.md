@@ -190,3 +190,43 @@ Post-restart validation:
 - Output pane exposed `GoFa10 (Station)` controller events, including `10045 - System restarted`, Motors On/Off, and safety-warning messages.
 
 Safety note: warm restart affects the virtual controller runtime state and may activate changed configuration parameters. Do not run it unless explicitly requested by the operator or a scenario has an explicit `allow_restart=true` flag.
+
+## 2026-05-15 FlexPendant Launch And Palletizing App Validation
+
+Validated opening FlexPendant from RobotStudio and launching the Palletizing app.
+
+RobotStudio route:
+
+- Open project `Palletize Template_new`.
+- Click ribbon tab `&Controller`.
+- In the FlexPendant group, click `CmdBarCtl_LaunchVNext`.
+
+FlexPendant window:
+
+- title: `VIRTUAL_CONTROLLER/GoFa10 - ABB Robotics FlexPendant`
+- Windows process: `ApplicationFrameHost.exe`
+- helper allowlist now includes `applicationframehost.exe`.
+
+FlexPendant home screen UIA exposed:
+
+- `ABB Robotics`
+- `Messages`
+- `Event log`
+- `Motors_off`
+- `ROB_1`
+- `Axis 1-3`
+- `Write access is held by: RobAPI2-Client,`
+- app tiles including `Code`, `Program Data`, `Jog`, `Settings`, `I/O`, `Operate`, `Calibrate`, `File Explorer`, `SafeMove`, `Controller Software`, `ASI Setting`, `Wizard`, `Palletizing`, and `PalletizingOld`.
+
+Opening `Palletizing`:
+
+- Clicking the `Palletizing` text label alone did not open it because the label had a zero-sized UIA rectangle.
+- Clicking the containing `GridViewItem` app tile opened the app. In this run it was zero-based tile index `12`, but future automation should map label to containing tile rather than hard-code the index.
+
+Opened Palletizing app:
+
+- exposed as embedded WebView2/Chromium inside FlexPendant;
+- UIA wrappers included `Microsoft.UI.Xaml.Controls.WebView2`, `Chrome_WidgetWin_1`, `Palletizing - Web content`, and `Document: Palletizing`;
+- visible app content included `Production`, `Tuning`, `Recipe configuration`, `Pattern builder`, `Palletizing | Production`, `Currently Palletizing`, `demo_pallet`, `Abort pallet`, `Start new pallet`, `Stop immediately`, `Resume`, `Pallet status`, `Pallet 1 Active`, `Pallet 2 Full`, `Pattern name: demo_pattern_2`, `Current layer 2/8`, `Total boxes placed 11/88`, and `88 % Remaining`.
+
+Safety note: FlexPendant is a real runtime surface. Reading and navigating is safe, but do not click runtime-affecting controls without explicit approval.

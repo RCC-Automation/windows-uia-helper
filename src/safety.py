@@ -14,6 +14,8 @@ ALLOWED_PROCESSES = {
     "calculatorapp.exe",
     "robotstudio.exe",
     "appstudio.desktop.exe",
+    # ABB Robotics FlexPendant is a packaged Windows app hosted by ApplicationFrameHost.
+    "applicationframehost.exe",
 }
 ALLOWED_ACTIONS = {
     "focus",

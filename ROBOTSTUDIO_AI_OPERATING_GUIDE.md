@@ -220,6 +220,168 @@ In the validated run, UIA polling saw `Controller status: 1/1` after the restart
 
 Warm restart changes controller runtime state and can activate changed configuration parameters. It is allowed only when explicitly requested. Future agents should not restart the controller as a routine health check.
 
+## Open FlexPendant And Launch Palletizing
+
+Validated on 2026-05-15 from RobotStudio project:
+
+```text
+Palletize Template_new
+```
+
+with virtual controller:
+
+```text
+GoFa10
+```
+
+### UI Route From RobotStudio
+
+1. Open the RobotStudio project and confirm the virtual controller is loaded.
+2. Click the ribbon tab:
+
+```text
+&Controller
+```
+
+3. In the Controller ribbon, locate the FlexPendant group:
+
+```text
+SplitButton: CmdBarSplitCtl_FlexPendantGallery
+Button: CmdBarCtl_LaunchVNext
+MenuItem: CmdBarCtl_FlexPendantGallery
+```
+
+4. Click:
+
+```text
+CmdBarCtl_LaunchVNext
+```
+
+5. RobotStudio launches a separate FlexPendant Windows app.
+
+### Window And Process
+
+The FlexPendant window appeared as:
+
+```text
+VIRTUAL_CONTROLLER/GoFa10 - ABB Robotics FlexPendant
+```
+
+Process observed by Windows:
+
+```text
+ApplicationFrameHost.exe
+```
+
+This is a normal Windows packaged-app host process. The helper allowlist includes `applicationframehost.exe` so the UIA wrapper can inspect and act on the FlexPendant window.
+
+### FlexPendant Home Screen
+
+The FlexPendant home screen is visible through UI Automation. It exposes status/header items:
+
+- `ABB Robotics`
+- `Messages`
+- `Event log`
+- `Motors_off`
+- `100%`
+- `ROB_1`
+- `Axis 1-3`
+- `Write access is held by: RobAPI2-Client,`
+- `VIRTUAL_CONTROLLER/GoFa10`
+- `Home`
+
+It also exposes app tiles as `ListItem` controls of class:
+
+```text
+GridViewItem
+```
+
+The observed app list included:
+
+- `Code`
+- `Program Data`
+- `Jog`
+- `Settings`
+- `I/O`
+- `Operate`
+- `Calibrate`
+- `File Explorer`
+- `SafeMove`
+- `Controller Software`
+- `ASI Setting`
+- `Wizard`
+- `Palletizing`
+- `PalletizingOld`
+
+Clicking the `Palletizing` text label alone did not open the app because that label had a zero-size rectangle in UIA. The successful route was to click the containing app tile/list item. In the validation run, the visible tile order placed `Palletizing` at zero-based index `12` among the `MainFrameApp.Model.AppModuleInfo` list items.
+
+Future automation should not rely only on that index. It should map tile text labels to the nearest containing `GridViewItem` rectangle when possible, with index order as a fallback.
+
+### Palletizing App In FlexPendant
+
+After opening `Palletizing`, FlexPendant showed an embedded WebView2/Chromium surface. UIA exposed both shell and app content without needing screenshots.
+
+Observed WebView wrappers:
+
+- `Microsoft.UI.Xaml.Controls.WebView2`
+- `Chrome_WidgetWin_1`
+- `Palletizing - Web content`
+- `BrowserRootView`
+- `Document: Palletizing`
+
+Observed Palletizing app content:
+
+- `Palletizing`
+- `Production`
+- `Tuning`
+- `Recipe configuration`
+- `Pattern builder`
+- `Palletizing | Production`
+- `Currently Palletizing`
+- `demo_pallet`
+- `Abort pallet`
+- `Actions`
+- `Start new pallet`
+- `Stop immediately`
+- `Resume`
+- `Pallet status`
+- `Pallet 1`
+- `Active`
+- `Pallet 2`
+- `Full`
+- `Click on Full (Palletizing done) for New (Ready to load) pallet status.`
+- `Current layer`
+- `Pattern name: demo_pattern_2`
+- `Current layer 2/8`
+- `Total boxes placed 11/88`
+- `88 % Remaining`
+
+Some custom app controls are exposed as UIA groups with web component class names, for example:
+
+```text
+fp-components-hamburgermenu-a-menu__button
+fp-components-button
+fp-components-button-disabled
+fp-components-dropdown
+```
+
+This means FlexPendant is a strong validation surface for deployed AppStudio apps: it exposes the real teach-pendant host and still provides structured UIA access to app text and many controls.
+
+### Safety Notes
+
+Opening FlexPendant and reading app content is safe.
+
+Stop and ask before clicking runtime-affecting app controls such as:
+
+- `Abort pallet`
+- `Start new pallet`
+- `Stop immediately`
+- `Resume`
+- pallet status changes such as `Full`
+- any Motors On/Off, jogging, calibration, or write-access controls
+
+The FlexPendant status may show `Motors_off` while the app is still inspectable. Treat that as controller state information, not an error by itself.
+
 ## Missing Capabilities To Implement Next
 
 - Add a reusable RobotStudio scenario runner that:
@@ -246,5 +408,13 @@ Warm restart changes controller runtime state and can activate changed configura
   - confirm `Restart (Warmstart)` only when a scenario flag such as `allow_restart=true` is present;
   - poll until `Controller status: 1/1`;
   - capture restart confirmation text and recovery evidence in the JSON run report.
+
+- Add FlexPendant automation:
+  - launch `CmdBarCtl_LaunchVNext` from the Controller ribbon;
+  - wait for `VIRTUAL_CONTROLLER/<controller> - ABB Robotics FlexPendant`;
+  - list home app tiles and map labels to containing `GridViewItem` controls;
+  - open a named app such as `Palletizing`;
+  - observe the embedded WebView2 app content through UIA;
+  - enforce explicit confirmation before runtime-affecting app controls.
 
 - Investigate RobotStudio APIs or command-line options for opening a project directly, but keep the UIA recent-project route as the proven fallback.
