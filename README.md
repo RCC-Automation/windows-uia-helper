@@ -108,6 +108,8 @@ The probe starts AppStudio if needed, confirms the native UIA shell controls, ch
 
 See [WEBVIEW_CHROMIUM_NOTES.md](WEBVIEW_CHROMIUM_NOTES.md) for the current AppStudio-specific findings and next investigation points.
 
+For future Codex/AppStudio AI threads, start with [APPSTUDIO_AI_OPERATING_GUIDE.md](APPSTUDIO_AI_OPERATING_GUIDE.md). It summarizes the validated AppStudio/controller/deployed-browser journey, the safety boundaries, and the missing capabilities needed for a full iterative development loop.
+
 To launch AppStudio with a temporary WebView2 remote-debugging environment variable and wait for the DevTools endpoint:
 
 ```powershell
