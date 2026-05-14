@@ -136,3 +136,36 @@ Generated files observed:
 - scaffold folders `CFG`, `MOD`, and `CustomFunctions`
 
 The opened blank designer showed breadcrumb `Projects > AITest01 > AITest01`, visible `Deploy`, `UI designer`, `Function`, `Translation`, `Component`, `Structure`, `Appearance`, `Behavior`, and default starter content such as `This is a Text` and `Button`.
+
+## 2026-05-14 RobotStudio Open Recent Project Validation
+
+Validated RobotStudio startup from scratch and opening an existing recent project.
+
+Executable:
+
+```text
+C:\Program Files (x86)\ABB\RobotStudio 2025\Bin\RobotStudio.exe
+```
+
+Startup state:
+
+- Window title: `RobotStudio`
+- UIA exposes `Backstage_New`, `Item_BackstageTabOpen`, and ribbon tabs.
+
+Open route:
+
+- Click `Item_BackstageTabOpen`.
+- `Backstage_Open` appears.
+- Recent projects list exposed `Palletize Template_new` and `Project1`.
+- Select `Palletize Template_new`.
+- Project info pane shows `Open`, location `C:\Users\barru\Documents\RobotStudio\Projects`, virtual controller `GoFa10`, and RobotWare `7.21.0`.
+- Click `Open`.
+
+Success evidence:
+
+- Window title changed to `Palletize Template_new - RobotStudio`.
+- Station tree showed `/Palletize Template_new*` and mechanisms/components.
+- Status bar showed `Controller status: 1/1`.
+- Output showed `GoFa10 (Station)` events including system restart, program started, user logged on, Motors On, and Motors Off.
+
+Conclusion: the recent-project route is enough for a future AI workflow to start RobotStudio, open the expected station, and confirm that one virtual controller is loaded before AppStudio attempts controller login/deployment.
