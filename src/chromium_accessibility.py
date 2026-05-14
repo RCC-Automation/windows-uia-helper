@@ -15,7 +15,7 @@ class ChromiumAccessibilityError(Exception):
 class ChromiumAccessibilityService:
     def status(self, host: str = "127.0.0.1", port: int = 9222) -> Dict[str, Any]:
         try:
-            version = self._get_json(f"http://{host}:{port}/json/version", timeout=2)
+            version = self._get_json(f"http://{host}:{port}/json/version", timeout=1)
             return {
                 "ok": True,
                 "host": host,
@@ -34,7 +34,7 @@ class ChromiumAccessibilityService:
             }
 
     def pages(self, host: str = "127.0.0.1", port: int = 9222) -> List[Dict[str, Any]]:
-        pages = self._get_json(f"http://{host}:{port}/json", timeout=5)
+        pages = self._get_json(f"http://{host}:{port}/json", timeout=3)
         if not isinstance(pages, list):
             raise ChromiumAccessibilityError("DEVTOOLS_BAD_RESPONSE", "DevTools /json did not return a page list.")
         return [

@@ -17,6 +17,7 @@ Initial implementation for the first priority slice:
 - `POST /hotkey`
 - Optional Chromium DevTools accessibility endpoints for embedded WebView/browser content
 - Notepad demo
+- AppStudio/WebView probe
 
 ## Install
 
@@ -94,6 +95,26 @@ Start the server, then run:
 ```
 
 The demo opens Notepad, observes the active window, finds an edit/document element, types `Hello from UI Automation`, sends `ctrl+s`, and observes the Save dialog.
+
+## AppStudio Probe
+
+Start the server, then run:
+
+```powershell
+.\.venv\Scripts\python examples\appstudio_probe.py
+```
+
+The probe starts AppStudio if needed, confirms the native UIA shell controls, checks common Chromium DevTools ports, and searches Chromium accessibility if a port is reachable.
+
+See [WEBVIEW_CHROMIUM_NOTES.md](WEBVIEW_CHROMIUM_NOTES.md) for the current AppStudio-specific findings and next investigation points.
+
+To launch AppStudio with a temporary WebView2 remote-debugging environment variable and wait for the DevTools endpoint:
+
+```powershell
+.\.venv\Scripts\python examples\appstudio_devtools_probe.py
+```
+
+If AppStudio is already running, close it fully before using this probe so the environment variable applies to the first AppStudio process.
 
 ## Chromium / WebView Accessibility
 
