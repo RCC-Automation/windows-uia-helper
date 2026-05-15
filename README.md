@@ -2,6 +2,8 @@
 
 Local Windows UI Automation helper for AI agents. It exposes the active Windows UI as structured JSON and can execute constrained UI actions without screenshot analysis.
 
+New Codex chats should start with [NEW_CHAT_START_HERE.md](NEW_CHAT_START_HERE.md). It gives the high-level purpose, reading order, quick AppStudio/RobotStudio/FlexPendant routes, and safety boundaries.
+
 ## Status
 
 Initial implementation for the first priority slice:
