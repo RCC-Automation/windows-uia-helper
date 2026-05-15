@@ -112,6 +112,8 @@ For future Codex/AppStudio AI threads, start with [APPSTUDIO_AI_OPERATING_GUIDE.
 
 For RobotStudio startup and recent-project opening, see [ROBOTSTUDIO_AI_OPERATING_GUIDE.md](ROBOTSTUDIO_AI_OPERATING_GUIDE.md).
 
+For FlexPendant launch, navigation, and deployed-app validation, see [FLEXPENDANT_AI_OPERATING_GUIDE.md](FLEXPENDANT_AI_OPERATING_GUIDE.md).
+
 To launch AppStudio with a temporary WebView2 remote-debugging environment variable and wait for the DevTools endpoint:
 
 ```powershell

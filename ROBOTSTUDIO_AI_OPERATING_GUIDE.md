@@ -222,6 +222,8 @@ Warm restart changes controller runtime state and can activate changed configura
 
 ## Open FlexPendant And Launch Palletizing
 
+For the dedicated FlexPendant workflow guide, see [FLEXPENDANT_AI_OPERATING_GUIDE.md](FLEXPENDANT_AI_OPERATING_GUIDE.md).
+
 Validated on 2026-05-15 from RobotStudio project:
 
 ```text
