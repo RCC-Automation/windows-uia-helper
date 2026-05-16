@@ -108,7 +108,7 @@ The app tiles are UIA `ListItem` controls with class:
 GridViewItem
 ```
 
-Observed apps:
+Observed apps in the current validation station:
 
 - `Code`
 - `Program Data`
@@ -127,47 +127,44 @@ Observed apps:
 
 ## Open A Deployed App
 
-For the Palletizing validation:
+Use this generic route for any deployed AppStudio web app:
 
 1. Focus the FlexPendant window.
-2. Find the app tile label:
+2. Find the requested app label, for example `Palletizing`, `MyWebApp`, or another deployed web app name.
+3. Do not rely on clicking the text node alone. Some app labels expose zero-sized or unreliable text rectangles.
+4. Click the containing app tile, usually a `GridViewItem`/`ListItem` with model name `MainFrameApp.Model.AppModuleInfo`, or the child `Button` whose `automation_id` equals the app name.
+5. If the app appears in the bottom running-app strip, do not treat that strip entry alone as success. Confirm the embedded app document and inner app text.
 
-```text
-Palletizing
-```
+In one validation run, `Palletizing` was the zero-based tile index `12` among `MainFrameApp.Model.AppModuleInfo` list items. Treat indexes only as a fallback. A durable implementation should map the visible label to its containing tile/group instead of hard-coding an index.
 
-3. Do not rely on clicking the text node alone. In the validation run, the `Palletizing` text node had a zero-sized UIA rectangle and did not open the app.
-4. Click the containing `GridViewItem` app tile.
+## Opened App Validation
 
-In the validation run, `Palletizing` was the zero-based tile index `12` among `MainFrameApp.Model.AppModuleInfo` list items, but this should be treated only as a fallback. A durable implementation should map labels to their containing app tiles.
-
-## Opened Palletizing App
-
-After opening `Palletizing`, FlexPendant showed an embedded WebView2/Chromium host.
+After opening a deployed AppStudio app, FlexPendant should show an embedded WebView2/Chromium host for that app.
 
 Observed wrappers:
 
 - `Microsoft.UI.Xaml.Controls.WebView2`
 - `Chrome_WidgetWin_1`
-- `Palletizing - Web content`
+- `<AppName> - Web content`
 - `BrowserRootView`
-- `Document: Palletizing`
+- `Document: <AppName>`
 
 Important validation rule:
 
-- Do not treat the bottom app-strip entry named `Palletizing` as proof that the app content is open.
+- Do not treat the bottom app-strip entry named after the app as proof that the app content is open.
 - The successful state is the embedded browser/document surface:
 
 ```text
-Chrome_WidgetWin_1: Palletizing
-BrowserRootView: Palletizing - Web content
-Document: Palletizing
+Chrome_WidgetWin_1: <AppName>
+BrowserRootView: <AppName> - Web content
+Document: <AppName>
 ```
 
-- If the helper's normal `/find` call does not find `Production`, `Currently Palletizing`, or `Pattern name`, do not conclude that app switching failed. The app content may be deeper than the helper API's default traversal depth.
+- Then confirm inner app-specific text, such as page title, navigation labels, status values, or known controls for the app under test.
+- If the helper's normal `/find` call does not find the expected app text, do not conclude that app switching failed. The app content may be deeper than the helper API's default traversal depth.
 - Use a deeper UIA read from the same desktop context, or enhance the helper to search below `BrowserRootView` until it reaches `RootWebArea`.
 
-Observed visible content:
+Example: Palletizing visible content observed through deeper UIA:
 
 - `Palletizing`
 - `Production`
@@ -207,7 +204,7 @@ This confirms that FlexPendant can be used to validate deployed AppStudio apps i
 
 ## Navigation
 
-The opened Palletizing app exposes the same high-level navigation as the deployed browser app:
+The opened deployed app may expose the same high-level navigation as the browser-hosted app. For Palletizing, observed navigation was:
 
 - `Production`
 - `Tuning`
@@ -258,7 +255,7 @@ For development loops, a good validation sequence is:
 - FlexPendant is hosted by `ApplicationFrameHost.exe`, a generic Windows host process. Do not treat every `ApplicationFrameHost.exe` window as safe; validate the title.
 - Some labels may have zero-sized UIA rectangles. Click the containing tile/group, not only the text.
 - The helper's default `/observe` depth may capture shell/breadcrumb text but miss deep WebView content. Use `/tree` with sufficient depth or direct UIA scripts when deeper inspection is required.
-- A running-app strip entry at the bottom of FlexPendant can show `Palletizing` even while the normal helper search still misses the app's inner WebView text. Confirm `Document: Palletizing` and inner text such as `Palletizing | Production`, not only the strip entry.
+- A running-app strip entry at the bottom of FlexPendant can show the app name even while the normal helper search still misses the app's inner WebView text. Confirm `Document: <AppName>` and inner app-specific text, not only the strip entry.
 - Runtime controls can change controller state. Reading is safe; acting needs explicit approval.
 
 ## Future Automation Work

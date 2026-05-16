@@ -2,6 +2,18 @@
 
 This guide is for a future Codex/AppStudio AI thread that needs to develop AppStudio projects, connect to a RobotStudio virtual controller, deploy, test the deployed web app, and feed findings back into the next implementation iteration.
 
+## Terminology
+
+Use generic terms in automation and reports. Treat concrete names from validation runs as examples only.
+
+- `<AppStudioProjectName>`: the AppStudio project shown on the AppStudio start page.
+- `<WebAppName>`: the web app/deployment name inside the AppStudio project. Often this matches the project name, but do not assume it.
+- `<RobotStudioProjectName>`: the RobotStudio station/project that hosts the virtual controller.
+- `<VirtualControllerName>`: the controller name shown by RobotStudio, for example `GoFa10`.
+- `<ControllerWebAppUrl>`: the controller file-service URL for a deployed web app, usually `https://127.0.0.1:80/fileservice/$HOME/WebApps/<WebAppName>/index.html?...`.
+
+Validated examples such as `Palletizing`, `Palletize Template_new`, and `GoFa10` prove the route. Future runs must substitute the operator's target project, web app, RobotStudio project, and controller names.
+
 ## Current Assessment
 
 The project is sufficient for a supervised proof-of-work loop:
@@ -19,7 +31,7 @@ The project is sufficient for a supervised proof-of-work loop:
 The project is not yet sufficient for a fully autonomous AppStudio development loop. The main gaps are:
 
 - no single high-level scenario runner that performs the whole AppStudio journey end to end;
-- no durable project-selection abstraction beyond the observed `Palletizing` project row;
+- no durable project-selection abstraction beyond observed project-card rows from validation runs;
 - no implemented "create new AppStudio project" workflow;
 - no automated local-folder deployment workflow;
 - no controller-state validation beyond deployed web app DOM inspection;
@@ -88,14 +100,14 @@ Open RobotStudio and load the virtual controller before AppStudio controller log
 
 1. Start `C:\Program Files (x86)\ABB\RobotStudio 2025\Bin\RobotStudio.exe`.
 2. Click `Item_BackstageTabOpen`.
-3. Select the recent project `Palletize Template_new`.
+3. Select the target recent project, `<RobotStudioProjectName>`.
 4. Click `Open`.
 5. Wait for:
 
 ```text
-Palletize Template_new - RobotStudio
+<RobotStudioProjectName> - RobotStudio
 Controller status: 1/1
-GoFa10
+<VirtualControllerName>
 ```
 
 Only after RobotStudio has this controller evidence, launch AppStudio through:
@@ -114,8 +126,9 @@ The expected result is `ok=true`.
 
 Validated 2026-05-16 evidence:
 
-- RobotStudio title: `Palletize Template_new - RobotStudio`
+- RobotStudio title: `<RobotStudioProjectName> - RobotStudio`
 - RobotStudio status: `Controller status: 1/1`
+- RobotStudio controller evidence: `<VirtualControllerName>`, for example `GoFa10`
 - AppStudio DevTools status: `ok=true` on port `9222`
 
 ### 2. Open An Existing Project
@@ -126,23 +139,23 @@ The start page exposes project content such as:
 
 - `Projects`
 - `Search`
-- `Palletizing`
+- `<AppStudioProjectName>`
 - `Web app`
 - date/time labels
 
-To open `Palletizing`, click the project card row label beside the project icon/date. Do not click the left-side list label if the card row is available. In the validated run, this row exposed:
+To open `<AppStudioProjectName>`, click the project card row label beside the project icon/date. Do not click the left-side list label if the card row is available. In the validated run, this row exposed:
 
 - `Project Icon`
-- `Palletizing`
+- `<AppStudioProjectName>`, for example `Palletizing`
 - `Web app`
 - `5/11/2026, 7:25:55 AM`
 
-In a 2026-05-16 run, clicking the visible `Palletizing` card label opened the designer and exposed the `Deploy` button through Chromium accessibility. Treat node ids from a specific run as temporary; find by accessible name/role each time.
+In a 2026-05-16 run, clicking the visible `Palletizing` card label opened the designer and exposed the `Deploy` button through Chromium accessibility. Treat that as an example. Node ids from a specific run are temporary; find by accessible name/role each time.
 
 Once opened, the designer exposes:
 
 - `Breadcrumb`
-- `Projects > Palletizing`
+- `Projects > <AppStudioProjectName>` or `Projects > <AppStudioProjectName> > <WebAppName>`
 - `Deploy`
 - `UI designer`
 - `Function`
@@ -177,7 +190,7 @@ Validated 2026-05-16 route:
 2. The dialog exposed `Virtual controller` and `Log in as Default User`.
 3. Selecting `Virtual controller` and clicking `Log in as Default User` closed the dialog.
 
-If this dialog does not close, return to RobotStudio and verify `Palletize Template_new - RobotStudio`, `GoFa10`, and `Controller status: 1/1`.
+If this dialog does not close, return to RobotStudio and verify `<RobotStudioProjectName> - RobotStudio`, `<VirtualControllerName>`, and `Controller status: 1/1`.
 
 ### 4. Deploy To Controller
 
@@ -195,7 +208,7 @@ If `Duplicate file found` appears, the `Continue` button overwrites the existing
 
 Expected success:
 
-- `Palletizing is deployed!`
+- `<WebAppName> is deployed!`
 - `You can open your web app in teach pendant now.`
 - buttons `Open in browser` and `OK`
 
@@ -203,7 +216,7 @@ Validated 2026-05-16 deploy evidence:
 
 - Duplicate warning text: `The deployment path contains a duplicate file. Continuing will overwrite it.`
 - After explicit operator approval, pressing `Continue` completed deployment.
-- Success dialog text: `Palletizing is deployed!`
+- Success dialog text: `<WebAppName> is deployed!`, for example `Palletizing is deployed!`
 - Success dialog button: `Open in browser`
 
 ### 5. Open And Log In To The Deployed App
@@ -214,6 +227,12 @@ Chrome opens a URL like:
 
 ```text
 http://127.0.0.1:80/fileservice/$HOME/WebApps/Palletizing/index.html?nocache=<uuid>
+```
+
+For a different app, substitute `<WebAppName>` in the controller path:
+
+```text
+https://127.0.0.1:80/fileservice/$HOME/WebApps/<WebAppName>/index.html?nocache=<uuid>
 ```
 
 Chrome shows a native login prompt for:
@@ -243,13 +262,15 @@ $env:APPSTUDIO_CONTROLLER_PASSWORD = "robotics"
 
 On this workstation, the operator may provide the local virtual-controller `Default User` password during the run. Ask for it when the Chrome login dialog appears instead of guessing.
 
-Expected success: Chrome title changes to the deployed web app name, for example `Palletizing`.
+Expected success: Chrome title changes to the deployed web app name, for example `<WebAppName> - Google Chrome`.
 
 Validated 2026-05-16 browser evidence after login:
 
 - Chrome title: `Palletizing - Google Chrome`
 - URL: `https://127.0.0.1:80/fileservice/$HOME/WebApps/Palletizing/index.html?nocache=<uuid>`
 - Visible app text: `Palletizing`, `Production`, `Currently Palletizing`, `demo_pallet`, `Current layer 2/8`, `Total boxes placed 11/88`, `88 % Remaining`
+
+Treat this as example evidence. For another app, validate `<WebAppName>` plus app-specific navigation labels, page title, status values, or known controls.
 
 If Chrome shows `Windows Hello` or a native `Anmelden` dialog after `Open in browser`, inspect the Chrome UIA tree for two `Edit` controls and the `Anmelden` button. Fill `Default User`, fill the operator-provided password, and press `Anmelden`.
 
@@ -271,10 +292,12 @@ Important:
 https://127.0.0.1:80/fileservice/$HOME/WebApps/Palletizing/index.html
 ```
 
+For other apps, replace `Palletizing` with `<WebAppName>`.
+
 - Ignore certificate errors through CDP with `Security.setIgnoreCertificateErrors`.
 - Avoid printing or committing passwords.
 
-Validated deployed-app navigation by DOM click:
+Validated deployed-app navigation by DOM click in the Palletizing example:
 
 - `Production`
 - `Tuning`

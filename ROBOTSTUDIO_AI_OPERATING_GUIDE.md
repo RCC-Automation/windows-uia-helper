@@ -2,6 +2,17 @@
 
 This guide documents the validated RobotStudio startup and open-existing-project route for future Codex/AppStudio automation work.
 
+## Terminology
+
+Use generic names in automation and reports. Treat concrete names from validation runs as examples only.
+
+- `<RobotStudioProjectName>`: the RobotStudio station/project to open.
+- `<VirtualControllerName>`: the controller name shown in the project info, output, status, or FlexPendant title.
+- `<RobotWareVersion>`: the RobotWare version shown in project metadata when available.
+- `<FlexPendantAppName>`: a deployed AppStudio app visible in the FlexPendant app grid.
+
+Validated examples such as `Palletize Template_new`, `GoFa10`, and `Palletizing` prove the route. Future runs must substitute the operator's target project, controller, and app names.
+
 ## Purpose
 
 RobotStudio is needed alongside AppStudio when AppStudio deployments must connect to a RobotStudio virtual controller. Future AI threads should be able to start RobotStudio, open an existing project from the recent-project list, and confirm that the project and virtual controller are loaded before AppStudio connects or deploys.
@@ -61,41 +72,41 @@ Backstage_Open
 - `CmdList_FileOpen`
 - `CmdList_BackstageOpenSample`
 
-5. The recent-project list exposed local project cards:
+5. The recent-project list exposes local project cards. In one validation run these included:
 
 - `Palletize Template_new`
 - `Project1`
 
-6. Select the desired project card. For the validated run, select:
+6. Select the desired project card, `<RobotStudioProjectName>`. For the validated run, this was:
 
 ```text
 Palletize Template_new
 ```
 
-7. RobotStudio shows a project information pane with:
+7. RobotStudio shows a project information pane. Generic fields to capture:
 
-- project name: `Palletize Template_new`
+- project name: `<RobotStudioProjectName>`
 - type: `Project`
 - button: `Open`
-- location: `C:\Users\barru\Documents\RobotStudio\Projects`
-- virtual controller: `GoFa10`
-- RobotWare: `7.21.0`
+- location, for example `C:\Users\barru\Documents\RobotStudio\Projects`
+- virtual controller: `<VirtualControllerName>`, for example `GoFa10`
+- RobotWare: `<RobotWareVersion>`, for example `7.21.0`
 
 8. Click the `Open` button.
 
 ## Success Signals
 
-After opening the project, RobotStudio window title changed to:
+After opening the project, RobotStudio window title should change to:
 
 ```text
-Palletize Template_new - RobotStudio
+<RobotStudioProjectName> - RobotStudio
 ```
 
 The UI tree exposed station/project content such as:
 
-- document tab: `DocumentTab_Palletize Template_new:View1`
-- station tree root: `/Palletize Template_new*`
-- mechanisms/components such as `CRB15000_10_152__01`, `Vacuum gripper`, `Roller Conveyor`, `SC Gripper V2`, pallets, slipsheets, and lift-kit entries
+- document tab: `DocumentTab_<RobotStudioProjectName>:View1`
+- station tree root: `/<RobotStudioProjectName>*`
+- mechanisms/components specific to the station, for example robot mechanisms, grippers, conveyors, pallets, fixtures, or other station assets
 - output tab: `DockTab_Output`
 
 Controller validation signals:
@@ -106,7 +117,7 @@ Controller validation signals:
 Controller status: 1/1
 ```
 
-- Output messages referencing the virtual controller:
+- Output messages referencing `<VirtualControllerName>`. Example from `GoFa10`:
 
 ```text
 GoFa10 (Station): 10045 - System restarted
@@ -142,17 +153,7 @@ For AppStudio deployment workflows, the minimum RobotStudio validation needed be
 
 ## Restart The Virtual Controller
 
-Validated on 2026-05-14 with project:
-
-```text
-Palletize Template_new
-```
-
-and virtual controller:
-
-```text
-GoFa10
-```
+Validated on 2026-05-14 with project `Palletize Template_new` and virtual controller `GoFa10`. Treat these as examples for `<RobotStudioProjectName>` and `<VirtualControllerName>`.
 
 ### UI Route
 
@@ -214,27 +215,17 @@ After confirming the warm restart, monitor RobotStudio until:
 Controller status: 1/1
 ```
 
-In the validated run, UIA polling saw `Controller status: 1/1` after the restart command and no remaining confirmation dialog. The visible Output list still exposed earlier `GoFa10 (Station)` messages, including `10045 - System restarted`, `10010 - Motors Off state`, `10011 - Motors On state`, and `90526 - Safety Controller Automatic Mode Warning`. Treat the status bar as the primary recovery signal unless a fresher event-log timestamp is available.
+In the validated run, UIA polling saw `Controller status: 1/1` after the restart command and no remaining confirmation dialog. The visible Output list still exposed earlier `<VirtualControllerName> (Station)` messages, including restart, Motors Off/On, and safety-warning events. Treat the status bar as the primary recovery signal unless a fresher event-log timestamp is available.
 
 ### Safety Notes
 
 Warm restart changes controller runtime state and can activate changed configuration parameters. It is allowed only when explicitly requested. Future agents should not restart the controller as a routine health check.
 
-## Open FlexPendant And Launch Palletizing
+## Open FlexPendant And Launch A Deployed App
 
 For the dedicated FlexPendant workflow guide, see [FLEXPENDANT_AI_OPERATING_GUIDE.md](FLEXPENDANT_AI_OPERATING_GUIDE.md).
 
-Validated on 2026-05-15 from RobotStudio project:
-
-```text
-Palletize Template_new
-```
-
-with virtual controller:
-
-```text
-GoFa10
-```
+Validated on 2026-05-15 from RobotStudio project `Palletize Template_new` with virtual controller `GoFa10`. Treat these as examples for `<RobotStudioProjectName>` and `<VirtualControllerName>`.
 
 ### UI Route From RobotStudio
 
@@ -269,6 +260,12 @@ The FlexPendant window appeared as:
 VIRTUAL_CONTROLLER/GoFa10 - ABB Robotics FlexPendant
 ```
 
+For another controller, expect:
+
+```text
+VIRTUAL_CONTROLLER/<VirtualControllerName> - ABB Robotics FlexPendant
+```
+
 Process observed by Windows:
 
 ```text
@@ -289,7 +286,7 @@ The FlexPendant home screen is visible through UI Automation. It exposes status/
 - `ROB_1`
 - `Axis 1-3`
 - `Write access is held by: RobAPI2-Client,`
-- `VIRTUAL_CONTROLLER/GoFa10`
+- `VIRTUAL_CONTROLLER/<VirtualControllerName>`, for example `VIRTUAL_CONTROLLER/GoFa10`
 - `Home`
 
 It also exposes app tiles as `ListItem` controls of class:
@@ -298,7 +295,7 @@ It also exposes app tiles as `ListItem` controls of class:
 GridViewItem
 ```
 
-The observed app list included:
+The observed app list in the validation station included:
 
 - `Code`
 - `Program Data`
@@ -315,23 +312,23 @@ The observed app list included:
 - `Palletizing`
 - `PalletizingOld`
 
-Clicking the `Palletizing` text label alone did not open the app because that label had a zero-size rectangle in UIA. The successful route was to click the containing app tile/list item. In the validation run, the visible tile order placed `Palletizing` at zero-based index `12` among the `MainFrameApp.Model.AppModuleInfo` list items.
+To open `<FlexPendantAppName>`, do not rely on clicking the text label alone. Some app labels have zero-size or unreliable rectangles in UIA. The successful route is to map the visible label to its containing app tile/list item and click that container. In the Palletizing validation run, the visible tile order placed `Palletizing` at zero-based index `12` among the `MainFrameApp.Model.AppModuleInfo` list items.
 
 Future automation should not rely only on that index. It should map tile text labels to the nearest containing `GridViewItem` rectangle when possible, with index order as a fallback.
 
-### Palletizing App In FlexPendant
+### Deployed App In FlexPendant
 
-After opening `Palletizing`, FlexPendant showed an embedded WebView2/Chromium surface. UIA exposed both shell and app content without needing screenshots.
+After opening `<FlexPendantAppName>`, FlexPendant should show an embedded WebView2/Chromium surface. UIA can expose both shell and app content without needing screenshots.
 
 Observed WebView wrappers:
 
 - `Microsoft.UI.Xaml.Controls.WebView2`
 - `Chrome_WidgetWin_1`
-- `Palletizing - Web content`
+- `<FlexPendantAppName> - Web content`
 - `BrowserRootView`
-- `Document: Palletizing`
+- `Document: <FlexPendantAppName>`
 
-Observed Palletizing app content:
+Confirm app-specific content such as the app title, navigation labels, status values, or known controls. Palletizing example content:
 
 - `Palletizing`
 - `Production`

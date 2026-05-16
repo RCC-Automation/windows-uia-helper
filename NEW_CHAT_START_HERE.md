@@ -38,7 +38,7 @@ The helper exposes Windows UI Automation and Chromium/WebView accessibility thro
 3. [FLEXPENDANT_AI_OPERATING_GUIDE.md](FLEXPENDANT_AI_OPERATING_GUIDE.md)
    - Why FlexPendant is important.
    - How to open it.
-   - How to find and open a deployed app such as `Palletizing`.
+   - How to find and open any deployed AppStudio app by visible app label, with `Palletizing` only as an example.
    - What the helper can see inside the real pendant-hosted app.
    - Which runtime actions are dangerous and require explicit approval.
 
@@ -58,6 +58,16 @@ There are three main surfaces:
 - **AppStudio**: authoring and deployment tool. Use it to open/create projects, connect to controller, and deploy.
 - **RobotStudio**: virtual-controller host. Use it to load the station/project and keep the virtual controller available.
 - **FlexPendant**: realistic operator/runtime validation surface. Use it to verify the deployed app as it appears on the controller/pendant side.
+
+Use generic target names in every workflow:
+
+- `<AppStudioProjectName>` for the AppStudio project.
+- `<WebAppName>` for the deployed web app name.
+- `<RobotStudioProjectName>` for the RobotStudio station/project.
+- `<VirtualControllerName>` for the controller, for example `GoFa10`.
+- `<FlexPendantAppName>` for the app tile to open in FlexPendant.
+
+Names such as `Palletizing`, `Palletize Template_new`, and `GoFa10` are validated examples, not assumptions for every task.
 
 Use the right automation backend for each surface:
 
@@ -116,7 +126,7 @@ Expected DevTools endpoint:
 Validated existing-project route:
 
 - From the front page, click the project card row label beside icon/date, not only the left-list label.
-- For `Palletizing`, this opened the designer.
+- For the validation example `Palletizing`, this opened the designer. For other work, substitute `<AppStudioProjectName>`.
 
 Validated leave-project route:
 
@@ -135,7 +145,7 @@ Validated new-project route:
 Validated controller connection route:
 
 - Use UIA for native AppStudio shell button `Connect to controller`.
-- RobotStudio should already show `Palletize Template_new - RobotStudio`, `GoFa10`, and `Controller status: 1/1`.
+- RobotStudio should already show `<RobotStudioProjectName> - RobotStudio`, `<VirtualControllerName>`, and `Controller status: 1/1`.
 - Select `Virtual controller`.
 - Click `Log in as Default User`.
 
@@ -149,10 +159,10 @@ Validated deploy route:
 Validated browser-open route:
 
 - Click `Open in browser` from the success dialog.
-- Chrome opens `https://127.0.0.1:80/fileservice/$HOME/WebApps/Palletizing/index.html?nocache=<uuid>`.
+- Chrome opens `https://127.0.0.1:80/fileservice/$HOME/WebApps/<WebAppName>/index.html?nocache=<uuid>`.
 - If Chrome shows the native login dialog `Anmelden`, use username `Default User` and ask the operator for the current-session password.
 - Do not commit plaintext passwords. If a reusable local credential is needed, keep it in ignored local environment such as `.env` or `.env.local`.
-- Successful browser evidence includes Chrome title `Palletizing - Google Chrome` and visible labels `Palletizing`, `Production`, `Currently Palletizing`, `demo_pallet`, `Current layer 2/8`, `Total boxes placed 11/88`, and `88 % Remaining`.
+- Successful browser evidence includes a Chrome title containing `<WebAppName>` and visible app-specific labels, status values, or known controls. Palletizing example labels include `Palletizing`, `Production`, `Currently Palletizing`, `demo_pallet`, `Current layer 2/8`, `Total boxes placed 11/88`, and `88 % Remaining`.
 
 ## RobotStudio Quick Route
 
@@ -166,13 +176,13 @@ Validated open route:
 
 - Start RobotStudio.
 - Click `Item_BackstageTabOpen`.
-- Select recent project `Palletize Template_new`.
+- Select recent project `<RobotStudioProjectName>`, for example `Palletize Template_new`.
 - Click `Open`.
 
 Success signals:
 
-- window title: `Palletize Template_new - RobotStudio`
-- project info/output references `GoFa10`
+- window title: `<RobotStudioProjectName> - RobotStudio`
+- project info/output references `<VirtualControllerName>`, for example `GoFa10`
 - status bar: `Controller status: 1/1`
 
 Validated restart route:
@@ -196,6 +206,12 @@ Expected window:
 VIRTUAL_CONTROLLER/GoFa10 - ABB Robotics FlexPendant
 ```
 
+For other controllers, substitute `<VirtualControllerName>`:
+
+```text
+VIRTUAL_CONTROLLER/<VirtualControllerName> - ABB Robotics FlexPendant
+```
+
 Process:
 
 ```text
@@ -209,9 +225,14 @@ Validated app list includes:
 - `Palletizing`
 - `PalletizingOld`
 
-To open `Palletizing`, click the containing `GridViewItem` tile. The text label alone may have a zero-sized UIA rectangle and may not open the app.
+To open `<FlexPendantAppName>`, click the containing `GridViewItem`/app tile. The text label alone may have a zero-sized UIA rectangle and may not open the app. `Palletizing` is one validated example.
 
-What the opened Palletizing app exposes:
+What an opened deployed AppStudio app should expose:
+
+- shell/WebView evidence such as `Chrome_WidgetWin_1: <FlexPendantAppName>`, `BrowserRootView: <FlexPendantAppName> - Web content`, and `Document: <FlexPendantAppName>`;
+- app-specific text such as title, navigation labels, status values, or known controls.
+
+Palletizing example evidence:
 
 - `Production`
 - `Tuning`
@@ -257,8 +278,8 @@ A Codex thread can now, with supervision:
 
 - operate AppStudio enough to open/create projects and deploy;
 - operate RobotStudio enough to open a project, confirm a controller, and restart it when asked;
-- launch FlexPendant and open the Palletizing app;
-- inspect deployed Palletizing runtime text without screenshots;
+- launch FlexPendant and open a deployed app by app label;
+- inspect deployed app runtime text without screenshots;
 - update the helper/docs and push changes to GitHub.
 
 ## What Is Still Missing
