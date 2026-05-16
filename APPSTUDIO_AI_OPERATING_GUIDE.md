@@ -68,7 +68,37 @@ http://127.0.0.1:9333
 
 Close AppStudio before launching it with WebView2 debugging. AppStudio may behave like a single-instance app, so starting a second process can reuse the old process and ignore the new `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS` environment variable.
 
-Start the helper service, then launch AppStudio through:
+Start the helper service, then confirm it is healthy:
+
+```powershell
+cd "C:\Users\barru\Documents\New project\UI automation\windows-uia-helper"
+.\.venv\Scripts\python -m uvicorn src.main:app --host 127.0.0.1 --port 8765
+Invoke-RestMethod http://127.0.0.1:8765/health
+```
+
+The expected health result is:
+
+```json
+{"ok":true,"backend":"uia","screenshot_dependency":false}
+```
+
+If a background helper process will not stay alive from inside a sandboxed shell, start the same command as a persistent local process and re-check `/health` before continuing.
+
+Open RobotStudio and load the virtual controller before AppStudio controller login. The validated route is:
+
+1. Start `C:\Program Files (x86)\ABB\RobotStudio 2025\Bin\RobotStudio.exe`.
+2. Click `Item_BackstageTabOpen`.
+3. Select the recent project `Palletize Template_new`.
+4. Click `Open`.
+5. Wait for:
+
+```text
+Palletize Template_new - RobotStudio
+Controller status: 1/1
+GoFa10
+```
+
+Only after RobotStudio has this controller evidence, launch AppStudio through:
 
 ```powershell
 .\.venv\Scripts\python examples\appstudio_devtools_probe.py
@@ -81,6 +111,12 @@ Invoke-RestMethod "http://127.0.0.1:8765/chromium/status?port=9222"
 ```
 
 The expected result is `ok=true`.
+
+Validated 2026-05-16 evidence:
+
+- RobotStudio title: `Palletize Template_new - RobotStudio`
+- RobotStudio status: `Controller status: 1/1`
+- AppStudio DevTools status: `ok=true` on port `9222`
 
 ### 2. Open An Existing Project
 
@@ -100,6 +136,8 @@ To open `Palletizing`, click the project card row label beside the project icon/
 - `Palletizing`
 - `Web app`
 - `5/11/2026, 7:25:55 AM`
+
+In a 2026-05-16 run, clicking the visible `Palletizing` card label opened the designer and exposed the `Deploy` button through Chromium accessibility. Treat node ids from a specific run as temporary; find by accessible name/role each time.
 
 Once opened, the designer exposes:
 
@@ -133,6 +171,14 @@ Select `Virtual controller`, then click `Log in as Default User`.
 
 If no virtual controller is running in RobotStudio, this will not complete. The expected success condition is that the login dialog closes.
 
+Validated 2026-05-16 route:
+
+1. UIA found AppStudio shell button `Connect to controller`.
+2. The dialog exposed `Virtual controller` and `Log in as Default User`.
+3. Selecting `Virtual controller` and clicking `Log in as Default User` closed the dialog.
+
+If this dialog does not close, return to RobotStudio and verify `Palletize Template_new - RobotStudio`, `GoFa10`, and `Controller status: 1/1`.
+
 ### 4. Deploy To Controller
 
 After controller login succeeds, click the Chromium `Deploy` button in the AppStudio designer.
@@ -152,6 +198,13 @@ Expected success:
 - `Palletizing is deployed!`
 - `You can open your web app in teach pendant now.`
 - buttons `Open in browser` and `OK`
+
+Validated 2026-05-16 deploy evidence:
+
+- Duplicate warning text: `The deployment path contains a duplicate file. Continuing will overwrite it.`
+- After explicit operator approval, pressing `Continue` completed deployment.
+- Success dialog text: `Palletizing is deployed!`
+- Success dialog button: `Open in browser`
 
 ### 5. Open And Log In To The Deployed App
 
@@ -181,9 +234,24 @@ Use username:
 Default User
 ```
 
-Use only the password explicitly provided by the operator in the current task/session. Do not store it in documentation or logs.
+Use only the password explicitly provided by the operator in the current task/session. Do not hardcode controller passwords in committed scripts. If the operator wants a reusable local credential, use an ignored local secret such as `.env` or `.env.local`, for example:
+
+```powershell
+$env:APPSTUDIO_CONTROLLER_USER = "Default User"
+$env:APPSTUDIO_CONTROLLER_PASSWORD = "robotics"
+```
+
+On this workstation, the operator may provide the local virtual-controller `Default User` password during the run. Ask for it when the Chrome login dialog appears instead of guessing.
 
 Expected success: Chrome title changes to the deployed web app name, for example `Palletizing`.
+
+Validated 2026-05-16 browser evidence after login:
+
+- Chrome title: `Palletizing - Google Chrome`
+- URL: `https://127.0.0.1:80/fileservice/$HOME/WebApps/Palletizing/index.html?nocache=<uuid>`
+- Visible app text: `Palletizing`, `Production`, `Currently Palletizing`, `demo_pallet`, `Current layer 2/8`, `Total boxes placed 11/88`, `88 % Remaining`
+
+If Chrome shows `Windows Hello` or a native `Anmelden` dialog after `Open in browser`, inspect the Chrome UIA tree for two `Edit` controls and the `Anmelden` button. Fill `Default User`, fill the operator-provided password, and press `Anmelden`.
 
 ### 6. Inspect The Deployed App Programmatically
 
@@ -228,6 +296,7 @@ Stop and ask before:
 - deleting or replacing AppStudio projects;
 - changing controller state outside the explicitly requested test;
 - using credentials that were not provided in the active task/session.
+- writing plaintext credentials into tracked repository files.
 
 Safe by default:
 

@@ -83,6 +83,14 @@ Health check:
 Invoke-RestMethod http://127.0.0.1:8765/health
 ```
 
+Expected healthy response:
+
+```json
+{"ok":true,"backend":"uia","screenshot_dependency":false}
+```
+
+If a background helper launched from Codex does not remain reachable, start the same uvicorn command as a persistent local process and re-check `/health`.
+
 ## AppStudio Quick Route
 
 AppStudio executable:
@@ -127,6 +135,7 @@ Validated new-project route:
 Validated controller connection route:
 
 - Use UIA for native AppStudio shell button `Connect to controller`.
+- RobotStudio should already show `Palletize Template_new - RobotStudio`, `GoFa10`, and `Controller status: 1/1`.
 - Select `Virtual controller`.
 - Click `Log in as Default User`.
 
@@ -136,6 +145,14 @@ Validated deploy route:
 - Use `Controller` target unless another target is requested.
 - If duplicate-file warning appears, `Continue` overwrites an existing controller deployment. Ask unless overwrite was explicitly approved.
 - Success dialog says the app is deployed and offers `Open in browser`.
+
+Validated browser-open route:
+
+- Click `Open in browser` from the success dialog.
+- Chrome opens `https://127.0.0.1:80/fileservice/$HOME/WebApps/Palletizing/index.html?nocache=<uuid>`.
+- If Chrome shows the native login dialog `Anmelden`, use username `Default User` and ask the operator for the current-session password.
+- Do not commit plaintext passwords. If a reusable local credential is needed, keep it in ignored local environment such as `.env` or `.env.local`.
+- Successful browser evidence includes Chrome title `Palletizing - Google Chrome` and visible labels `Palletizing`, `Production`, `Currently Palletizing`, `demo_pallet`, `Current layer 2/8`, `Total boxes placed 11/88`, and `88 % Remaining`.
 
 ## RobotStudio Quick Route
 
