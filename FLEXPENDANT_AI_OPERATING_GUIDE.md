@@ -153,6 +153,20 @@ Observed wrappers:
 - `BrowserRootView`
 - `Document: Palletizing`
 
+Important validation rule:
+
+- Do not treat the bottom app-strip entry named `Palletizing` as proof that the app content is open.
+- The successful state is the embedded browser/document surface:
+
+```text
+Chrome_WidgetWin_1: Palletizing
+BrowserRootView: Palletizing - Web content
+Document: Palletizing
+```
+
+- If the helper's normal `/find` call does not find `Production`, `Currently Palletizing`, or `Pattern name`, do not conclude that app switching failed. The app content may be deeper than the helper API's default traversal depth.
+- Use a deeper UIA read from the same desktop context, or enhance the helper to search below `BrowserRootView` until it reaches `RootWebArea`.
+
 Observed visible content:
 
 - `Palletizing`
@@ -244,6 +258,7 @@ For development loops, a good validation sequence is:
 - FlexPendant is hosted by `ApplicationFrameHost.exe`, a generic Windows host process. Do not treat every `ApplicationFrameHost.exe` window as safe; validate the title.
 - Some labels may have zero-sized UIA rectangles. Click the containing tile/group, not only the text.
 - The helper's default `/observe` depth may capture shell/breadcrumb text but miss deep WebView content. Use `/tree` with sufficient depth or direct UIA scripts when deeper inspection is required.
+- A running-app strip entry at the bottom of FlexPendant can show `Palletizing` even while the normal helper search still misses the app's inner WebView text. Confirm `Document: Palletizing` and inner text such as `Palletizing | Production`, not only the strip entry.
 - Runtime controls can change controller state. Reading is safe; acting needs explicit approval.
 
 ## Future Automation Work
