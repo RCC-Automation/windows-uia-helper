@@ -15,6 +15,8 @@ The target workflow is:
 5. Validate the deployment in a browser and in FlexPendant.
 6. Use observations from the deployed runtime to guide the next implementation iteration.
 
+Hard rule: controller deployment is not allowed before AppStudio is connected to the RobotStudio virtual controller. Do not press AppStudio `Deploy` for target `Controller` until RobotStudio shows `Controller status: 1/1` and the AppStudio `Log in to controller` dialog has closed successfully in the current AppStudio session.
+
 The helper exposes Windows UI Automation and Chromium/WebView accessibility through local APIs and scripts. It is not a full autonomous agent yet; it is a supervised automation foundation.
 
 ## Read These Guides In Order
@@ -151,8 +153,15 @@ Validated controller connection route:
 
 Validated deploy route:
 
+- This route is gated. Before clicking `Deploy`, verify:
+  - RobotStudio title is `<RobotStudioProjectName> - RobotStudio`;
+  - RobotStudio shows `<VirtualControllerName>`;
+  - RobotStudio status is `Controller status: 1/1`;
+  - AppStudio controller login completed in this session;
+  - no `Log in to controller` dialog remains open.
 - Click `Deploy`.
 - Use `Controller` target unless another target is requested.
+- If any gate is missing, do not deploy. Return to `Connect to controller` first.
 - If duplicate-file warning appears, `Continue` overwrites an existing controller deployment. Ask unless overwrite was explicitly approved.
 - Success dialog says the app is deployed and offers `Open in browser`.
 

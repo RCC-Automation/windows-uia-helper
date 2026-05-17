@@ -194,6 +194,30 @@ If this dialog does not close, return to RobotStudio and verify `<RobotStudioPro
 
 ### 4. Deploy To Controller
 
+Controller deployment is gated. A shard must not click the Chromium `Deploy` button for target `Controller` until controller login has succeeded in the current AppStudio session.
+
+Required preflight before clicking `Deploy`:
+
+1. RobotStudio is open on the expected project:
+
+```text
+<RobotStudioProjectName> - RobotStudio
+```
+
+2. RobotStudio shows the target virtual controller and loaded-controller status:
+
+```text
+<VirtualControllerName>
+Controller status: 1/1
+```
+
+3. AppStudio project designer is open for `<AppStudioProjectName>` / `<WebAppName>`.
+4. The native AppStudio shell route `Connect to controller` has been completed.
+5. The `Log in to controller` dialog closed after selecting `Virtual controller` and clicking `Log in as Default User`.
+6. No connection/login dialog or controller error is still visible.
+
+If any preflight item is missing, stop and complete `Connect to controller` first. Do not press `Deploy` just to test whether AppStudio will prompt for connection.
+
 After controller login succeeds, click the Chromium `Deploy` button in the AppStudio designer.
 
 The deploy modal exposes:
@@ -203,6 +227,8 @@ The deploy modal exposes:
 - final `Deploy` button.
 
 Click final `Deploy`.
+
+If the deploy modal was opened before the preflight was verified, cancel/close it and complete controller connection first.
 
 If `Duplicate file found` appears, the `Continue` button overwrites the existing controller deployment. This is acceptable only when the operator has approved an intentional redeploy. Otherwise stop and ask.
 
@@ -525,6 +551,8 @@ Projects > AITest01 > AITest01
   - detect success/failure from dialog state.
 
 - Add reusable deploy logic:
+  - enforce `controller_connected=true` before controller-target deployment;
+  - refuse controller deployment if RobotStudio `Controller status: 1/1` or AppStudio login-dialog-closed evidence is missing;
   - select controller or local folder target;
   - handle duplicate-file warning with an explicit `allow_overwrite` flag;
   - detect success dialog and optionally open browser.
